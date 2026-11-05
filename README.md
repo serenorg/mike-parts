@@ -21,3 +21,24 @@ can be copied over it and compared.
 
 This repository as a whole, including the tools built from Mike's code, is
 under the AGPL-3.0 (`LICENSE`).
+
+## The tools
+
+`dist/` holds two single-file Node 22 tools built from Mike's code. Each reads
+one JSON object on stdin and writes one on stdout; a failure writes
+`{"error": "..."}` and exits with status 1.
+
+- `node dist/docx-tracked-changes.js`: in `{"docx_base64", "edits": [{"find", "replace", "context_before", "context_after", "reason"?}], "author"?}`,
+  out `{"docx_base64", "changes", "errors"}`. Each edit appears in the Word file as a tracked change.
+- `node dist/verify-quotes.js`: in `{"source", "quotes": [...]}`, out
+  `{"results": [{"quote", "verified", "needs_correction", "start_char"?, "end_char"?, "source_excerpt"?}]}`.
+  `verified` is true only when the quote is found in the source, allowing for
+  differences in spacing, capitals and punctuation, which `needs_correction` flags.
+
+## Rebuilding
+
+```bash
+npm ci
+npm run build   # scripts/build.sh: esbuild into dist/; commit dist/
+npm run check   # rebuilds, confirms dist/ matches, and runs both tools on Node 22
+```

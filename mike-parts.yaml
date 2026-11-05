@@ -8,6 +8,13 @@ parts:
     paths:
       - backend/src/lib/docxTrackedChanges.ts
       - backend/src/modules/chat/engine/verifyCitations.ts
+    # Seren's stand-ins, not upstream files: each holds only what verifyCitations.ts
+    # imports, copied unchanged from the upstream file named, so it builds without Mike's server.
+    shims:
+      - path: backend/src/modules/chat/engine/types.ts
+        copies: QuoteVerification from packages/contracts/index.d.ts
+      - path: backend/src/modules/chat/engine/tools/documentOps.ts
+        copies: isPunctuation and normalizeWithMap from backend/src/modules/chat/engine/tools/documentOps.ts
   - repository: open-legal-products/mike-workflows
     license: MIT
     commit: 20bed204ce9ef07e1bc2df0b16b35ee8ad997fb1
