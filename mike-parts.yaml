@@ -1,0 +1,25 @@
+# ABOUTME: The list of Mike parts this repository copies: each part's upstream repository, path and commit.
+# ABOUTME: Each copy sits at the same path under a folder named for its upstream repository, unchanged.
+parts:
+  - repository: open-legal-products/mike
+    license: AGPL-3.0
+    commit: b91d1bdf4b7cdcbbe28def2aef4630bde1729a49
+    folder: mike
+    paths:
+      - backend/src/lib/docxTrackedChanges.ts
+      - backend/src/modules/chat/engine/verifyCitations.ts
+  - repository: open-legal-products/mike-workflows
+    license: MIT
+    commit: 20bed204ce9ef07e1bc2df0b16b35ee8ad997fb1
+    folder: mike-workflows
+    paths:
+      - LICENSE
+      - assistant-workflows/compare-documents
+      - assistant-workflows/draft-from-template
+      - assistant-workflows/extract-key-terms
+      - assistant-workflows/in-their-own-words
+      - assistant-workflows/issues-list-draft
+      - assistant-workflows/proofread
+      - assistant-workflows/verity-the-hallucination-audit
+      - assistant-workflows/legal-verification-pack/opposing-counsel-attack
+      - assistant-workflows/legal-verification-pack/output-scoring
