@@ -1,0 +1,3 @@
+# ABOUTME: Files git leaves out of this repository.
+# ABOUTME: dist/ is built output but stays committed, so it is not listed here.
+node_modules/

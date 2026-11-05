@@ -1,0 +1,20 @@
+{
+  "name": "mike-parts",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "description": "Seren's copies of parts of Mike, and the tools built from them.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "scripts/build.sh",
+    "check": "scripts/check.sh"
+  },
+  "dependencies": {
+    "fast-xml-parser": "5.11.2",
+    "jszip": "3.10.2"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
