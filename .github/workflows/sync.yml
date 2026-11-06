@@ -1,0 +1,26 @@
+# ABOUTME: Daily, and on demand, checks upstream Mike for newer copies of the parts in mike-parts.yaml.
+# ABOUTME: When any changed, scripts/sync.py opens one pull request, or updates the open one; nothing merges by itself.
+name: sync
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: python3 -c 'import yaml' || python3 -m pip install --user pyyaml
+      - run: python3 scripts/sync.py
+        env:
+          GH_TOKEN: ${{ github.token }}
