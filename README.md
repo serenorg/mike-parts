@@ -42,3 +42,14 @@ npm ci
 npm run build   # scripts/build.sh: esbuild into dist/; commit dist/
 npm run check   # rebuilds, confirms dist/ matches, and runs both tools on Node 22
 ```
+
+## Keeping the parts current
+
+`.github/workflows/sync.yml` runs `scripts/sync.py` daily and on demand. For
+each part in `mike-parts.yaml` it compares the listed commit with upstream's
+newest commit. When a part's files changed, it copies them, updates the
+commit, rebuilds `dist/` and opens one pull request on `sync/mike-parts`, or
+updates the open one, with a compare link for each part. It never merges.
+Run `python3 scripts/sync.py --dry-run` after `npm ci` to see what it would
+change without committing or opening anything. Changes to the upstream files
+that Seren's stand-ins copy from are listed for a person to check by hand.
