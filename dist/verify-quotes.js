@@ -35,7 +35,19 @@ var UNREADABLE_SOURCES = /* @__PURE__ */ new Set([
   "Document could not be read.",
   "Document not found."
 ]);
+var CHEAP_TIERS = [{}, { stripPunctuation: true }];
+var LINE_END_HYPHEN_TIERS = [
+  { joinLineEndHyphens: "keep" },
+  { joinLineEndHyphens: "drop" },
+  { stripPunctuation: true, joinLineEndHyphens: "drop" }
+];
+var MAY_HAVE_LINE_END_HYPHEN = /[-\u2010\u2011\u00ad][^\S\n\r]*[\n\r]/;
+var optionsKey = (opts) => `${opts.stripPunctuation ? "strip" : "punct"}/${opts.joinLineEndHyphens ?? "nojoin"}`;
 var prepareSource = (source) => ({ source, normalized: /* @__PURE__ */ new Map(), needles: /* @__PURE__ */ new Map() });
+function lineEndHyphenTiers(prepared) {
+  prepared.mayHaveLineEndHyphen ??= MAY_HAVE_LINE_END_HYPHEN.test(prepared.source);
+  return prepared.mayHaveLineEndHyphen ? LINE_END_HYPHEN_TIERS : [];
+}
 function createQuoteVerifier(source) {
   const prepared = prepareSource(source);
   return (quote) => verifyQuoteAgainstSource(source, quote, prepared);
@@ -46,20 +58,21 @@ function locateQuote(source, quote, prepared = prepareSource(source)) {
   if (exactIdx >= 0) {
     return { start: exactIdx, end: exactIdx + quote.length, excerpt: quote };
   }
-  return locateNormalized(prepared, quote, false) ?? locateNormalized(prepared, quote, true);
+  for (const opts of [...CHEAP_TIERS, ...lineEndHyphenTiers(prepared)]) {
+    const location = locateNormalized(prepared, quote, opts);
+    if (location) return location;
+  }
+  return null;
 }
+var earliest = (locations) => locations.reduce((first, candidate) => candidate && (!first || candidate.start < first.start) ? candidate : first, null);
 function locateQuoteFrom(prepared, quote, from) {
   const { source } = prepared;
   if (from >= source.length) return null;
   const offset = Math.max(0, from);
-  const candidates = [];
   const exactIndex = source.indexOf(quote, offset);
-  if (exactIndex >= 0) candidates.push({ start: exactIndex, end: exactIndex + quote.length, excerpt: quote });
-  const normalized = locateNormalized(prepared, quote, false, offset);
-  if (normalized) candidates.push(normalized);
-  const punctuationTolerant = locateNormalized(prepared, quote, true, offset);
-  if (punctuationTolerant) candidates.push(punctuationTolerant);
-  return candidates.reduce((earliest, candidate) => !earliest || candidate.start < earliest.start ? candidate : earliest, null);
+  const exact = exactIndex >= 0 ? { start: exactIndex, end: exactIndex + quote.length, excerpt: quote } : null;
+  const at = (opts) => locateNormalized(prepared, quote, opts, offset);
+  return earliest([exact, ...CHEAP_TIERS.map(at)]) ?? earliest(lineEndHyphenTiers(prepared).map(at));
 }
 function locateSegmentsInOrder(prepared, segments, maxGap) {
   let attempts = 0;
@@ -81,17 +94,18 @@ function locateSegmentsInOrder(prepared, segments, maxGap) {
   };
   return search(0, 0, null);
 }
-function locateNormalized(prepared, quote, stripPunctuation, from = 0) {
-  let normalized = prepared.normalized.get(stripPunctuation);
+function locateNormalized(prepared, quote, opts, from = 0) {
+  const tier = optionsKey(opts);
+  let normalized = prepared.normalized.get(tier);
   if (!normalized) {
-    normalized = normalizeWithMap(prepared.source, { stripPunctuation });
-    prepared.normalized.set(stripPunctuation, normalized);
+    normalized = normalizeWithMap(prepared.source, opts);
+    prepared.normalized.set(tier, normalized);
   }
   const { norm, origIdx } = normalized;
-  const key = `${stripPunctuation}:${quote}`;
+  const key = `${tier}:${quote}`;
   let needle = prepared.needles.get(key);
   if (needle === void 0) {
-    needle = normalizeWithMap(quote, { stripPunctuation }).norm.trim();
+    needle = normalizeWithMap(quote, opts).norm.trim();
     prepared.needles.set(key, needle);
   }
   if (!needle) return null;

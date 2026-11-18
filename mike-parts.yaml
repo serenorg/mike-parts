@@ -3,7 +3,7 @@
 parts:
   - repository: open-legal-products/mike
     license: AGPL-3.0
-    commit: b91d1bdf4b7cdcbbe28def2aef4630bde1729a49
+    commit: 70cbde6d0dab087dbe555de9c01a0d8cdf8c5428
     folder: mike
     paths:
       - backend/src/lib/docxTrackedChanges.ts
